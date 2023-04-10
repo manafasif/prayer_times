@@ -59,7 +59,7 @@ with open('prayer_timings.csv', 'r') as csvfile:
 
         # Looping over each row in the original csv file that we made after fetching the Json data
         for row in csvreader:
-            # Convert the times to minutes
+            # Converting the times to minutes
             fajr_minutes = (datetime.strptime(row[1], '%H:%M') - datetime(1900, 1, 1)).total_seconds() / 60.0
             duhr_minutes = (datetime.strptime(row[2], '%H:%M') - datetime(1900, 1, 1)).total_seconds() / 60.0
             asr_minutes = (datetime.strptime(row[3], '%H:%M') - datetime(1900, 1, 1)).total_seconds() / 60.0
