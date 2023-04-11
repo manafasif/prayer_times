@@ -1,9 +1,7 @@
-# This Python program fetches prayer timings from api.aladhan based on location provided
-# It generates a connected scatterplot graph of different prayer times
-# The program helps the Muslim community find free time to schedule meetings without conflicts
-# The graph provides a great advantage in managing time effectively
-# The program takes care of daylight savings to ensure accurate timings
-# Overall, this sophisticated program is an essential asset for any Muslim seeking to manage their schedule effectively
+# This is a python program that fetches all the prayer timings from api.aladhan based on the location provided
+# and gives us the connected scatterplot graph of different prayer times which will help the muslim community with
+# a great advantage to find free time to schedule different meetings without conflictics of time
+# Besides another functionality of the program is it takes care of the daylight savings.
 
 import csv
 import requests
