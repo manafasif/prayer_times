@@ -105,6 +105,15 @@ def generate_prayer_times_graph(start_month, start_year, end_month, end_year, ad
         pd.to_timedelta(df['IshaMinutes'], unit='m')
 
     # plotting the data using matplotlib and showing it
+    yticklocs = [60 * i for i in range(25)]
+    yticklabels = ["12:00 AM"]
+    yticklabels.extend(["{}:00 AM".format(t) for t in range(1, 12)])
+    yticklabels.append("12:00 PM")
+    yticklabels.extend(["{}:00 PM".format(t) for t in range(1, 12)])
+    yticklabels.append("12:00 AM")
+
+
+    plt.yticks(yticklocs, yticklabels)
     plt.plot(df['Date'], df['FajrMinutes'], label='Fajr')
     plt.plot(df['Date'], df['DhuhrMinutes'], label='Dhuhr')
     plt.plot(df['Date'], df['AsrMinutes'], label='Asr')
@@ -116,7 +125,7 @@ def generate_prayer_times_graph(start_month, start_year, end_month, end_year, ad
 
 
 start_month = 1
-start_year = 2020
+start_year = 2023
 end_month = 12
 end_year = 2023
 address = "1906 Nueces St, Austin, TX 78705"

@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 
+from prayertimes import *
+
 app = Flask(__name__)
 
 # This is just a skeleton for the API
@@ -8,23 +10,22 @@ app = Flask(__name__)
 @app.route('/graph', methods=['GET'])
 def get_graph():
     # get parameters from query string
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
+    start_month = request.args.get('start_month')
+    start_year = request.args.get('start_year')
+    end_month = request.args.get('end_month')
+    end_year = request.args.get('end_year')
+
     address = request.args.get('address')
 
     # call function to retrieve image
-    image = generate_graph(start_date, end_date, address)
+    # image = generate_graph(start_date, end_date, address)
+    graph = generate_prayer_times_graph(
+        start_month, start_year, end_month, end_year, address)
 
     # return image as response
-    response = jsonify({'image': image})
+    response = jsonify({'graph': graph})
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
-
-
-def generate_graph(start_date, end_date, address):
-    # implement logic to retrieve image data based on date range and address
-    # ...
-    return graph
 
 
 if __name__ == '__main__':
