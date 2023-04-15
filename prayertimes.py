@@ -112,8 +112,9 @@ def generate_prayer_times_graph(start_month, start_year, end_month, end_year, ad
     yticklabels.extend(["{}:00 PM".format(t) for t in range(1, 12)])
     yticklabels.append("12:00 AM")
 
-
     plt.yticks(yticklocs, yticklabels)
+    for y0, y1 in zip(yticklocs[::2], yticklocs[1::2]):
+        plt.axhspan(y0, y1, color='black', alpha=0.1, zorder=0)
     plt.plot(df['Date'], df['FajrMinutes'], label='Fajr')
     plt.plot(df['Date'], df['DhuhrMinutes'], label='Dhuhr')
     plt.plot(df['Date'], df['AsrMinutes'], label='Asr')
@@ -124,10 +125,11 @@ def generate_prayer_times_graph(start_month, start_year, end_month, end_year, ad
     plt.show()
 
 
-start_month = 1
+start_month = 8
 start_year = 2023
 end_month = 12
 end_year = 2023
+# address = "Norway"
 address = "1906 Nueces St, Austin, TX 78705"
 
 generate_prayer_times_graph(start_month, start_year,
