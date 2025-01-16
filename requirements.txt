@@ -37,7 +37,6 @@ pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 pytz==2024.2
 pytz-deprecation-shim==0.1.0.post0
-pywin32==308
 referencing==0.35.1
 requests==2.31.0
 rich==13.9.4
