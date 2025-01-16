@@ -15,15 +15,3 @@ def get_month_year_range(start_month, start_year, end_month, end_year):
             start_date = start_date.replace(day=1)
 
     return month_year_list
-
-# test
-
-# start_month = 4
-# start_year = 2022
-# end_month = 9
-# end_year = 2023
-
-# month_year_list = get_month_year_range(
-#     start_month, start_year, end_month, end_year)
-# for month, year in month_year_list:
-#     print(f"{month}/{year}")
