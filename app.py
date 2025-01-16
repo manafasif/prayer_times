@@ -79,91 +79,119 @@ def generate_prayer_times_graph(start_month, start_year, end_month, end_year, ad
 
 
 # Streamlit UI
-st.title("Prayer Times Visualization")
-st.write("Generate graphs showing prayer times throughout the year with customizable options.")
+st.set_page_config(page_title="SalahGraph")
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Go to", ["Home", "About"])
 
-# Input form for date range and address
-with st.form("input_form"):
-    # Date and Address Inputs
-    start_date = st.date_input("Start Date", value=current_date)
-    end_date = st.date_input("End Date", value=one_year_later)
-    address = st.text_input("Address", value="Lombard, IL")
+if page == "Home":
+    st.title("SalahGraph: Prayer Times Visualization")
+    st.write(
+        "Generate graphs showing prayer times throughout the year with customizable options.")
 
-    # Customization Inputs
-    graph_title = st.text_input("Graph Title", value="Prayer Timings")
-    x_label = st.text_input("X-Axis Label", value="Date")
-    y_label = st.text_input("Y-Axis Label", value="Time (minutes)")
-    grid_lines = st.checkbox("Show Grid Lines", value=True)
-    line_style = st.selectbox("Line Style", ["-", "--", "-.", ":"])
-    color_palette = st.selectbox(
-        "Color Palette", ["Default", "coolwarm", "viridis", "plasma", "cividis"])
-    submitted = st.form_submit_button("Generate Graph")
+    # Input form for date range and address
+    with st.form("input_form"):
+        # Date and Address Inputs
+        start_date = st.date_input("Start Date", value=current_date)
+        end_date = st.date_input("End Date", value=one_year_later)
+        address = st.text_input("Address", value="Lombard, IL")
 
-# Function to generate month-year ranges based on date inputs
+        # Customization Inputs
+        graph_title = st.text_input("Graph Title", value="Prayer Timings")
+        x_label = st.text_input("X-Axis Label", value="Date")
+        y_label = st.text_input("Y-Axis Label", value="Time (minutes)")
+        grid_lines = st.checkbox("Show Grid Lines", value=True)
+        line_style = st.selectbox("Line Style", ["-", "--", "-.", ":"])
+        color_palette = st.selectbox(
+            "Color Palette", ["Default", "coolwarm", "viridis", "plasma", "cividis"])
+        submitted = st.form_submit_button("Generate Graph")
 
+    # Function to generate month-year ranges based on date inputs
 
-def get_month_year_range_from_dates(start_date, end_date):
-    start_month = start_date.month
-    start_year = start_date.year
-    end_month = end_date.month
-    end_year = end_date.year
-    return get_month_year_range(start_month, start_year, end_month, end_year)
+    def get_month_year_range_from_dates(start_date, end_date):
+        start_month = start_date.month
+        start_year = start_date.year
+        end_month = end_date.month
+        end_year = end_date.year
+        return get_month_year_range(start_month, start_year, end_month, end_year)
 
-# Function to apply color palette
+    # Function to apply color palette
 
+    def apply_color_palette(palette, prayers):
+        if palette == "Default":
+            return {}
+        colors = plt.cm.get_cmap(palette, len(prayers))
+        return {prayer: colors(i) for i, prayer in enumerate(prayers)}
 
-def apply_color_palette(palette, prayers):
-    if palette == "Default":
-        return {}
-    colors = plt.cm.get_cmap(palette, len(prayers))
-    return {prayer: colors(i) for i, prayer in enumerate(prayers)}
+    # Generate graph
+    if submitted:
+        with st.spinner("Generating graph..."):
+            timings_data = []
+            month_year_list = get_month_year_range_from_dates(
+                start_date, end_date)
 
+            for month, year in month_year_list:
+                timings_data.extend(get_prayer_data(year, month, address))
 
-# Generate graph
-if submitted:
-    with st.spinner("Generating graph..."):
-        timings_data = []
-        month_year_list = get_month_year_range_from_dates(start_date, end_date)
+            if not timings_data:
+                st.error("No data available.")
+            else:
+                df = pd.DataFrame(timings_data, columns=[
+                    "Date", "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])
+                df["Date"] = pd.to_datetime(
+                    df["Date"], format="%Y-%m-%d %H:%M:%S")
 
-        for month, year in month_year_list:
-            timings_data.extend(get_prayer_data(year, month, address))
+                for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]:
+                    df[f"{prayer}"] = pd.to_datetime(
+                        df[f"{prayer}"], format='%H:%M')
+                    df[f"{prayer}Minutes"] = df[f"{prayer}"].apply(
+                        lambda x: (x - datetime.combine(x.date(), datetime.min.time())).total_seconds() / 60)
 
-        if not timings_data:
-            st.error("No data available.")
-        else:
-            df = pd.DataFrame(timings_data, columns=[
-                              "Date", "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])
-            df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d %H:%M:%S")
+                # Apply color palette
+                colors = apply_color_palette(
+                    color_palette, ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])
 
-            for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]:
-                df[f"{prayer}"] = pd.to_datetime(
-                    df[f"{prayer}"], format='%H:%M')
-                df[f"{prayer}Minutes"] = df[f"{prayer}"].apply(
-                    lambda x: (x - datetime.combine(x.date(), datetime.min.time())).total_seconds() / 60)
+                plt.figure(figsize=(10, 6))
+                for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]:
+                    plt.plot(df["Date"], df[f"{prayer}Minutes"], label=prayer,
+                             linestyle=line_style, color=colors.get(prayer))
 
-            # Apply color palette
-            colors = apply_color_palette(
-                color_palette, ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])
+                plt.title(graph_title)
+                plt.xlabel(x_label)
+                plt.ylabel(y_label)
 
-            plt.figure(figsize=(10, 6))
-            for prayer in ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]:
-                plt.plot(df["Date"], df[f"{prayer}Minutes"], label=prayer,
-                         linestyle=line_style, color=colors.get(prayer))
+                if grid_lines:
+                    plt.grid()
 
-            plt.title(graph_title)
-            plt.xlabel(x_label)
-            plt.ylabel(y_label)
+                y_ticks = range(0, int(df["IshaMinutes"].max()) + 60, 60)
+                plt.yticks(y_ticks, [
+                    f"{int(minutes/60):02d}:{int(minutes%60):02d}" for minutes in y_ticks])
 
-            if grid_lines:
-                plt.grid()
+                plt.legend()
+                buffer = BytesIO()
+                plt.savefig(buffer, format="png")
+                buffer.seek(0)
+                st.image(buffer, caption="Prayer Times Graph",
+                         use_container_width=True)
 
-            y_ticks = range(0, int(df["IshaMinutes"].max()) + 60, 60)
-            plt.yticks(y_ticks, [
-                       f"{int(minutes/60):02d}:{int(minutes%60):02d}" for minutes in y_ticks])
+elif page == "About":
+    st.title("About SalahGraph")
+    st.write("""
+    This project was created to help individuals visualize prayer times throughout the year. By inputting a location 
+    and date range, users can generate customized graphs to better understand daily prayer schedules.
 
-            plt.legend()
-            buffer = BytesIO()
-            plt.savefig(buffer, format="png")
-            buffer.seek(0)
-            st.image(buffer, caption="Prayer Times Graph",
-                     use_container_width=True)
+    ### Why This Project Was Created
+    Muslims around the world follow specific prayer times that change daily based on the location and time of the year. 
+    This app provides a simple way to visualize these changes, helping individuals plan their routines throughout the 
+    year, and muslim organizations/mosques plan their prayer schedules throughout the year.
+
+    ### Features
+    - Generate prayer time graphs for any date range.
+    - Customizable graph titles, styles, and labels.
+    - Support for various locations worldwide.
+    - Incorporates time changes due to DST.
+
+    ### Future Improvements
+    - Integration with geolocation services for automatic location detection.
+    - Enhanced styling options for the graphs.
+    
+    """)
